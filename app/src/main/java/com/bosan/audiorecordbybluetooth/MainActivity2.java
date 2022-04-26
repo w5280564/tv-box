@@ -1,8 +1,12 @@
 package com.bosan.audiorecordbybluetooth;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -13,26 +17,32 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Button;
 
 
-
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.sdk.android.oss.ClientException;
 import com.alibaba.sdk.android.oss.ServiceException;
 import com.alibaba.sdk.android.oss.model.PutObjectRequest;
 import com.alibaba.sdk.android.oss.model.PutObjectResult;
+import com.zhy.http.okhttp.OkHttpUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import okhttp3.MediaType;
 
 public class MainActivity2 extends Activity {
 
-    private     String FILE_NAME  ;
+    private String FILE_NAME;
 
     private AudioRecord audioRecord = null;
     private int recordBufsize = 0;
@@ -42,38 +52,39 @@ public class MainActivity2 extends Activity {
     private Button stopRecordBtn;
 
     private Thread recordingThread;
+    private MyReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        initReceiver();
 
-      FILE_NAME=  Environment.getDataDirectory().getPath() + File.separator + System.currentTimeMillis()+"test.pcm";
+        FILE_NAME = Environment.getDataDirectory().getPath() + File.separator + System.currentTimeMillis() + "test.pcm";
 
 
-
-
-            File myfile = getApplicationContext().getExternalCacheDir();
+        File myfile = getApplicationContext().getExternalCacheDir();
 
         try {
             File file = File.createTempFile("audio_", ".pcm", myfile);
-            FILE_NAME=file.getAbsolutePath();
+            FILE_NAME = file.getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.d("FILE_NAME--->",FILE_NAME);
+        Log.d("FILE_NAME--->", FILE_NAME);
         startRecordBtn = (Button) findViewById(R.id.start_record_btn);
         stopRecordBtn = (Button) findViewById(R.id.stop_record_btn);
         createAudioRecord();
-        startRecordBtn.setOnClickListener(v -> {
-            startRecord();
-        });
-        stopRecordBtn.setOnClickListener(v -> {
-            stopRecord();
-        });
-
-
     }
+
+    private void initReceiver() {
+        receiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Constants.VOICE_KEY_DOWN_ACTION_DOWN);
+        intentFilter.addAction(Constants.VOICE_KEY_DOWN_ACTION_UP);
+        registerReceiver(receiver, intentFilter);
+    }
+
     public static File getFilesystemRoot(String path) {
         File cache = Environment.getDownloadCacheDirectory();
         if (path.startsWith(cache.getPath())) {
@@ -108,7 +119,6 @@ public class MainActivity2 extends Activity {
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 recordBufsize);
-
 
 
     }
@@ -243,43 +253,88 @@ public class MainActivity2 extends Activity {
         if (audioRecord != null) {
             audioRecord.stop();
             Log.i("audioRecordTest", "停止录音");
-            audioRecord.release();
-            audioRecord = null;
-            recordingThread = null;
+//            audioRecord.release();
+//            audioRecord = null;
+//            recordingThread = null;
         }
-        String FILE_NAME_WAW="";
+        String FILE_NAME_WAW = "";
         File myfile = getApplicationContext().getExternalCacheDir();
 
         try {
             File file = File.createTempFile("audio_", ".wav", myfile);
-            FILE_NAME_WAW=file.getAbsolutePath();
+            FILE_NAME_WAW = file.getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        PcmToWavUtil pcmToWavUtil=new PcmToWavUtil(44100,
+        PcmToWavUtil pcmToWavUtil = new PcmToWavUtil(44100,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT);
-        pcmToWavUtil.pcmToWav(FILE_NAME,FILE_NAME_WAW);
-        Log.d("FILE_NAME--->2",FILE_NAME_WAW);
-        String fileName="test_"+System.currentTimeMillis()+"wav";
-        new UploadFileUtils(getApplicationContext(), fileName, FILE_NAME_WAW).asyncUploadFile(new UploadFileUtils.UploadCallBack() {
-            @Override
-            public void onProgress(PutObjectRequest request, long currentSize, long totalSize) {
-
-            }
-
-            @Override
-            public void onSuccess(PutObjectRequest request, PutObjectResult result) {
-                Log.d("FILE_NAME--->3",UploadFileUtils.baseOssUrl+fileName);
-            }
-
-            @Override
-            public void onFailure(PutObjectRequest request, ClientException clientExcepion, ServiceException serviceException) {
-
-            }
-        });
+        pcmToWavUtil.pcmToWav(FILE_NAME, FILE_NAME_WAW);
+        Log.d("FILE_NAME--->2", FILE_NAME_WAW);
+        String fileName = "test_" + System.currentTimeMillis() + ".wav";
+        File uploadFile = new File(FILE_NAME_WAW);
+        uploadVoiceFile(uploadFile);
+//        new UploadFileUtils(getApplicationContext(), fileName, FILE_NAME_WAW).asyncUploadFile(new UploadFileUtils.UploadCallBack() {
+//            @Override
+//            public void onProgress(PutObjectRequest request, long currentSize, long totalSize) {
+//
+//            }
+//
+//            @Override
+//            public void onSuccess(PutObjectRequest request, PutObjectResult result) {
+//                Log.d("FILE_NAME--->3", UploadFileUtils.baseOssUrl + fileName);
+//            }
+//
+//            @Override
+//            public void onFailure(PutObjectRequest request, ClientException clientExcepion, ServiceException serviceException) {
+//
+//            }
+//        });
     }
 
 
- 
+
+    private void uploadVoiceFile(File file){
+        HashMap<String, String> baseMap = new HashMap<>();
+        baseMap.put("device_id", getDeviceId());
+        HttpSender sender = new HttpSender(Constants.POST_VOICE_FILE, baseMap,
+                new HttpSender.OnHttpResListener() {
+                    @Override
+                    public void onComplete(JSONObject json_root, int code, String msg) {
+                        if (code == Constants.REQUEST_SUCCESS_CODE) {
+
+                        }else{
+
+                        }
+                    }
+                });
+        sender.sendPostFile(file);
+    }
+
+
+    private class MyReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, final Intent intent) {
+            String action = intent.getAction();
+            int keyCode = intent.getIntExtra("keyCode",0);
+            if (action.equals(Constants.VOICE_KEY_DOWN_ACTION_DOWN)) {//遥控器录音键 按下去开始录音
+                Log.i("audioRecordTest", "开始录音keyCode>>>"+keyCode);
+                startRecord();
+            } else if (intent.getAction().equals(Constants.VOICE_KEY_DOWN_ACTION_UP)) {//遥控器录音键 松开结束录音
+                Log.i("audioRecordTest", "结束录音keyCode>>>"+keyCode);
+                stopRecord();
+            }
+        }
+    }
+
+
+
+    @SuppressLint("MissingPermission")
+    public  String getDeviceId() {
+        TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        return telephonyManager.getDeviceId();
+    }
+
+
 }

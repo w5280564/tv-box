@@ -28,7 +28,7 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'com.aliyun.dpa:oss-android-sdk:2.9.7'
-
-
+    implementation 'com.zhy:okhttputils:2.6.2'
+    implementation 'com.alibaba:fastjson:1.2.79'
 
 }
