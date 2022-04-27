@@ -297,6 +297,7 @@ public class MainActivity2 extends Activity {
     private void uploadVoiceFile(File file){
         HashMap<String, String> baseMap = new HashMap<>();
         baseMap.put("device_id", getDeviceId());
+        baseMap.put("send_msg", "6666");
         HttpSender sender = new HttpSender(Constants.POST_VOICE_FILE, baseMap,
                 new HttpSender.OnHttpResListener() {
                     @Override
