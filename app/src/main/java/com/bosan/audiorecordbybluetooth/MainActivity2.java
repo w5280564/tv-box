@@ -273,6 +273,7 @@ public class MainActivity2 extends Activity {
         Log.d("FILE_NAME--->2", FILE_NAME_WAW);
         String fileName = "test_" + System.currentTimeMillis() + ".wav";
         File uploadFile = new File(FILE_NAME_WAW);
+        Log.d("文件名",uploadFile.getName());
         uploadVoiceFile(uploadFile);
 //        new UploadFileUtils(getApplicationContext(), fileName, FILE_NAME_WAW).asyncUploadFile(new UploadFileUtils.UploadCallBack() {
 //            @Override
@@ -297,7 +298,7 @@ public class MainActivity2 extends Activity {
     private void uploadVoiceFile(File file){
         HashMap<String, String> baseMap = new HashMap<>();
         baseMap.put("device_id", getDeviceId());
-        baseMap.put("send_msg", "6666");
+//        baseMap.put("send_msg", "6666");
         HttpSender sender = new HttpSender(Constants.POST_VOICE_FILE, baseMap,
                 new HttpSender.OnHttpResListener() {
                     @Override

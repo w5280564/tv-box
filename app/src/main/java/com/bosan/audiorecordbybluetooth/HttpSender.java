@@ -30,9 +30,10 @@ public class HttpSender {
 			this.paramsMap = Obj2Map(mRequestObj);
 		}
 		headerMap.put("key", Constants.PUBLIC_KEY);
-		headerMap.put("sign", getSign());
-		Log.d("Sign","sign>>>"+getSign());
-		headerMap.put("time", System.currentTimeMillis()+"");
+		long time = System.currentTimeMillis()/1000;
+		headerMap.put("sign", getSign(time));
+		Log.d("Sign","sign>>>"+getSign(time));
+		headerMap.put("time", time+"");
 
 		JSONObject jsonObject = (JSONObject) JSONObject.toJSON(headerMap);
 		Log.d(TAG_API,"---Header Data---" + jsonObject.toJSONString());
@@ -40,8 +41,8 @@ public class HttpSender {
 
 
 
-	private String getSign(){
-		String originalSine = String.format("key=%s&route=%s&time=%s%s",Constants.PUBLIC_KEY,Constants.POST_VOICE_FILE_ROUTE,System.currentTimeMillis()+"",Constants.PRIVATE_SECRET);
+	private String getSign(long time){
+		String originalSine = String.format("key=%s&route=%s&time=%s%s",Constants.PUBLIC_KEY,Constants.POST_VOICE_FILE_ROUTE,time+"",Constants.PRIVATE_SECRET);
 		Log.d("Sign","originalSine>>>"+originalSine);
 		return MD5.getStringMD5(originalSine);
 	}
@@ -147,7 +148,6 @@ public class HttpSender {
 		 * @param msg  返回信息（提示语）
 		 */
 		void onComplete(JSONObject json_root, int code, String msg);
-
 
 	}
 
