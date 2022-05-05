@@ -1,44 +1,30 @@
 package com.bosan.audiorecordbybluetooth;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
-import android.hardware.input.InputManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Button;
-
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.sdk.android.oss.ClientException;
-import com.alibaba.sdk.android.oss.ServiceException;
-import com.alibaba.sdk.android.oss.model.PutObjectRequest;
-import com.alibaba.sdk.android.oss.model.PutObjectResult;
-import com.zhy.http.okhttp.OkHttpUtils;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
-import okhttp3.MediaType;
 
 public class MainActivity2 extends Activity {
 
@@ -75,6 +61,15 @@ public class MainActivity2 extends Activity {
         startRecordBtn = (Button) findViewById(R.id.start_record_btn);
         stopRecordBtn = (Button) findViewById(R.id.stop_record_btn);
         createAudioRecord();
+        Button characters_btn = (Button) findViewById(R.id.characters_btn);
+        characters_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity2.this, WebViewActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     private void initReceiver() {
@@ -119,8 +114,6 @@ public class MainActivity2 extends Activity {
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 recordBufsize);
-
-
     }
 
     @Override
@@ -191,15 +184,12 @@ public class MainActivity2 extends Activity {
                 break;
             case 166:
                 Log.e("main", "--------节目加--------");
-
                 break;
             case 167:
                 Log.e("main", "--------节目减--------");
-
                 break;
             default:
                 Log.e("main", "--------未知--------");
-
                 break;
         }
         return super.onKeyDown(keyCode, event);
@@ -273,7 +263,7 @@ public class MainActivity2 extends Activity {
         Log.d("FILE_NAME--->2", FILE_NAME_WAW);
         String fileName = "test_" + System.currentTimeMillis() + ".wav";
         File uploadFile = new File(FILE_NAME_WAW);
-        Log.d("文件名",uploadFile.getName());
+        Log.d("文件名", uploadFile.getName());
         uploadVoiceFile(uploadFile);
 //        new UploadFileUtils(getApplicationContext(), fileName, FILE_NAME_WAW).asyncUploadFile(new UploadFileUtils.UploadCallBack() {
 //            @Override
@@ -294,8 +284,7 @@ public class MainActivity2 extends Activity {
     }
 
 
-
-    private void uploadVoiceFile(File file){
+    private void uploadVoiceFile(File file) {
         HashMap<String, String> baseMap = new HashMap<>();
         baseMap.put("device_id", getDeviceId());
 //        baseMap.put("send_msg", "6666");
@@ -304,8 +293,14 @@ public class MainActivity2 extends Activity {
                     @Override
                     public void onComplete(JSONObject json_root, int code, String msg) {
                         if (code == Constants.REQUEST_SUCCESS_CODE) {
-
-                        }else{
+                            mainBean mainBean = new Gson().fromJson(json_root.toJSONString(), mainBean.class);
+                            if (mainBean.getData() != null) {
+                                String question = mainBean.getData().getQuestion();
+                                String answer = mainBean.getData().getAnswer();
+                                String format = String.format("问题：%1$s ----- 答案：%2$s", question, answer);
+                                Toast.makeText(MainActivity2.this, format, Toast.LENGTH_LONG).show();
+                            }
+                        } else {
 
                         }
                     }
@@ -315,25 +310,23 @@ public class MainActivity2 extends Activity {
 
 
     private class MyReceiver extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, final Intent intent) {
             String action = intent.getAction();
-            int keyCode = intent.getIntExtra("keyCode",0);
+            int keyCode = intent.getIntExtra("keyCode", 0);
             if (action.equals(Constants.VOICE_KEY_DOWN_ACTION_DOWN)) {//遥控器录音键 按下去开始录音
-                Log.i("audioRecordTest", "开始录音keyCode>>>"+keyCode);
+                Log.i("audioRecordTest", "开始录音keyCode>>>" + keyCode);
                 startRecord();
             } else if (intent.getAction().equals(Constants.VOICE_KEY_DOWN_ACTION_UP)) {//遥控器录音键 松开结束录音
-                Log.i("audioRecordTest", "结束录音keyCode>>>"+keyCode);
+                Log.i("audioRecordTest", "结束录音keyCode>>>" + keyCode);
                 stopRecord();
             }
         }
     }
 
 
-
     @SuppressLint("MissingPermission")
-    public  String getDeviceId() {
+    public String getDeviceId() {
         TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         return telephonyManager.getDeviceId();
     }

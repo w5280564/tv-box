@@ -9,7 +9,6 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -30,5 +29,7 @@ dependencies {
     implementation 'com.aliyun.dpa:oss-android-sdk:2.9.7'
     implementation 'com.zhy:okhttputils:2.6.2'
     implementation 'com.alibaba:fastjson:1.2.79'
-
+    implementation 'com.google.code.gson:gson:2.9.0'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
 }
