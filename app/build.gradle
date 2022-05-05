@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        rele {
+            storeFile file('D:\\机顶盒\\box.jks')
+            keyAlias 'box'
+            storePassword 'box123456'
+            keyPassword 'box123456'
+        }
+    }
     compileSdkVersion 19
 
     defaultConfig {
