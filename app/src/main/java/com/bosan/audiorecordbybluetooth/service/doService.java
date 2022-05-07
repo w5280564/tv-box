@@ -1,4 +1,4 @@
-package com.bosan.audiorecordbybluetooth;
+package com.bosan.audiorecordbybluetooth.service;
 
 import android.app.Service;
 import android.content.Intent;
@@ -6,7 +6,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class doService extends Service {
 
@@ -31,10 +30,7 @@ public class doService extends Service {
 //                Log.d(TAG, "timer 200ms !!count=" + count);
 //            }
 //        }, 1000, 200);
-
-        Intent activityIntent = new Intent(this, MainActivity2.class);
-        activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(activityIntent);
+//
     }
 
 

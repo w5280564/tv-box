@@ -15,8 +15,10 @@
     <uses-permission
         android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"
         tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-permission android:name="android.permission.RESTART_PACKAGES"/>  <!--  应用安装自启动  -->
 
     <application
         android:allowBackup="true"
@@ -25,8 +27,7 @@
         android:supportsRtl="true">
         <activity
             android:name=".WebViewActivity"
-            android:exported="false"
-            android:hardwareAccelerated="true"/>
+            android:exported="false"/>
 
         <activity android:name=".MainActivity2">
             <intent-filter>
@@ -39,12 +40,18 @@
         <receiver android:name=".broadcast.BootBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-
                 <category android:name="android.intent.category.HOME" />
+<!--                <action android:name="android.intent.action.PACKAGE_INSTALL"/>-->
+<!--                <action android:name="android.intent.action.PACKAGE_ADDED"/>-->
+<!--                <action android:name="android.intent.action.PACKAGE_REPLACED"/>-->
+<!--                <data android:scheme="package"/>-->
+
             </intent-filter>
         </receiver>
 
-        <service android:name=".doService"/>
+
+
+        <service android:name=".service.doService"></service>
     </application>
 
 </manifest>

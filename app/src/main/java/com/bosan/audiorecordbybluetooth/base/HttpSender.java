@@ -1,13 +1,18 @@
-package com.bosan.audiorecordbybluetooth;
+package com.bosan.audiorecordbybluetooth.base;
 
+import android.text.TextUtils;
 import android.util.Log;
 import com.alibaba.fastjson.JSONObject;
+import com.bosan.audiorecordbybluetooth.MD5;
+import com.bosan.audiorecordbybluetooth.utils.GsonUtil;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import okhttp3.Call;
+import okhttp3.MediaType;
 import okhttp3.Request;
 
 /**
@@ -48,6 +53,13 @@ public class HttpSender {
 	}
 
 
+	public void sendGet() {
+		requestGet();
+	}
+
+	public void sendPost() {
+		requestPost();
+	}
 
 	/**
 	 * 上传单个文件
@@ -56,6 +68,66 @@ public class HttpSender {
 		requestPostFile(file);
 	}
 
+	/**
+	 * get请求
+	 */
+	private void requestGet() {
+		HashMap<String, String> upLoadMap = getRequestData();
+		OkHttpUtils.get().url(requestUrl)
+				.params(upLoadMap)
+				.headers(headerMap)
+				.build().execute(new StringDialogCallback());
+	}
+
+	/**
+	 * POST请求
+	 */
+	private void requestPost() {
+		setRequestData_POST();
+		String request_data = GsonUtil.getInstance().toJson(paramsMap);
+		if (!TextUtils.isEmpty(request_data)) {
+			OkHttpUtils.postString()
+					.url(requestUrl)
+					.content(request_data)
+					.mediaType(MediaType.parse("application/json; charset=utf-8"))
+					.headers(headerMap)
+					.build().execute(new StringDialogCallback());
+		}
+	}
+
+	/**
+	 * 获取请求的数据
+	 * @return
+	 */
+	private HashMap<String, String> getRequestData() {
+		HashMap<String, String> upLoadMap = new HashMap<>();
+		if (paramsMap != null) {
+			for (String key : paramsMap.keySet()) {
+				Object requestParams = paramsMap.get(key);
+				if(requestParams!=null){
+					upLoadMap.put(key,requestParams.toString());
+				}
+			}
+		}
+		return upLoadMap;
+	}
+
+
+	/**
+	 * 设置请求的数据(POST)
+	 * @return
+	 */
+	private void setRequestData_POST() {
+			if (paramsMap != null) {
+
+				for (String key : paramsMap.keySet()) {
+					Object requestParams = paramsMap.get(key);
+					if(requestParams!=null){
+					}
+
+				}
+			}
+	}
 
 	/**
 	 * POST 带文件上传时 调用此方法
@@ -98,9 +170,6 @@ public class HttpSender {
 
 
 	public  class StringDialogCallback extends StringCallback {
-
-
-
 
 		@Override
 		public void onError(Call call, Exception e, int id) {

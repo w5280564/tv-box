@@ -1,4 +1,4 @@
-package com.bosan.audiorecordbybluetooth;
+package com.bosan.audiorecordbybluetooth.bean;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

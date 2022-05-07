@@ -1,6 +1,8 @@
 package com.bosan.audiorecordbybluetooth;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -9,6 +11,12 @@ import android.webkit.WebViewClient;
 
 public class WebViewActivity extends Activity {
 
+    public static void startActivity(Context context,String url){
+        Intent intent = new Intent(context, WebViewActivity.class);
+        intent.putExtra("url",url);
+        context.startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -16,31 +24,20 @@ public class WebViewActivity extends Activity {
         WebView webView = (WebView) findViewById(R.id.web);
 
         WebSettings webSettings = webView.getSettings();
-        webSettings.setDefaultTextEncodingName("utf-8") ;
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webView.setWebChromeClient(new WebChromeClient());
-        webView.setWebViewClient(new WebViewClient(){//不写的话自动跳到默认浏览器了 跳出APP
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                if(url.startsWith("intent")||url.startsWith("youku")){
-                    return true;
-                }else{
-                    return super.shouldOverrideUrlLoading(view, url);
-                }
-            }
-        });
+//        webView.getSettings().setLoadWithOverviewMode(true);
+//        webView.setWebChromeClient(new WebChromeClient());
+
 //        String url = "http://ar.gstai.com/xuniren.html";
-        String url = "http://ar.gstai.com/stb/#/home";
-        webView.loadUrl(url);
+//        String url = "https://fanyi.baidu.com/translate?aldtype=16047&query=&keyfrom=baidu&smartresult=dict&lang=auto2zh#auto/zh/";
+//        String url = "https://www.bilibili.com/";
+//        String url = "https://www.baidu.com/";
+//        String url = "http://ar.gstai.com/stb/#/home";
+        String url = "http://ar.gstai.com/stb/#/";
+//        String url = "http://toptopv.com/";
 
+        String homePageUrl = getIntent().getStringExtra("url");
+        webView.loadUrl(homePageUrl);
 
-//        //该方法解决的问题是打开浏览器不调用系统浏览器，直接用webview打开
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                view.loadUrl(url);
-                return true;
-            }
-        });
     }
 }

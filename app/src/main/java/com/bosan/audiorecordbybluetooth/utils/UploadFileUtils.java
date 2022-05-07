@@ -1,4 +1,4 @@
-package com.bosan.audiorecordbybluetooth;
+package com.bosan.audiorecordbybluetooth.utils;
 
 import android.content.Context;
 import android.os.Handler;

@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -19,6 +21,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
+import com.bosan.audiorecordbybluetooth.base.Constants;
+import com.bosan.audiorecordbybluetooth.base.HttpSender;
+import com.bosan.audiorecordbybluetooth.bean.mainBean;
+import com.bosan.audiorecordbybluetooth.bean.versionBean;
+import com.bosan.audiorecordbybluetooth.utils.PcmToWavUtil;
 import com.google.gson.Gson;
 
 import java.io.File;
@@ -65,11 +72,16 @@ public class MainActivity2 extends Activity {
         characters_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity2.this, WebViewActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(MainActivity2.this, WebViewActivity.class);
+//                startActivity(intent);
+                if (versionBean != null){
+                    String homePage = versionBean.getData().getHomePage();
+                    WebViewActivity.startActivity(MainActivity2.this,homePage);
+                }
             }
         });
 
+        getCheckVersion();
     }
 
     private void initReceiver() {
@@ -93,6 +105,11 @@ public class MainActivity2 extends Activity {
                 "Cannot determine filesystem root for " + path);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
+    }
 
     private void createAudioRecord() {
         recordBufsize = AudioRecord
@@ -331,5 +348,43 @@ public class MainActivity2 extends Activity {
         return telephonyManager.getDeviceId();
     }
 
+    versionBean versionBean;
+
+    /**
+     * 版本更新
+     */
+    private void getCheckVersion(){
+        String versionName = getVersionName(this);
+        HashMap<String, String> baseMap = new HashMap<>();
+        baseMap.put("version", versionName);
+        HttpSender sender = new HttpSender(Constants.GET_CHECK_VERSION, baseMap,new HttpSender.OnHttpResListener() {
+                    @Override
+                    public void onComplete(JSONObject json_root, int code, String msg) {
+                        if (code == Constants.REQUEST_SUCCESS_CODE) {
+                             versionBean = new Gson().fromJson(json_root.toJSONString(), versionBean.class);
+                            if (versionBean != null) {
+
+                            }
+                        }
+                    }
+                });
+        sender.sendGet();
+    }
+
+
+    /**
+     * 获取版本名称
+     */
+    public static String getVersionName(Context context) {
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo(
+                    context.getPackageName(), 0);
+            return packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }
