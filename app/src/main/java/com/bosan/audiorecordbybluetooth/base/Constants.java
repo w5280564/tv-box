@@ -11,4 +11,11 @@ public class Constants {
     public static final int REQUEST_SUCCESS_CODE = 200;
     public static final String GET_CHECK_VERSION = SERVICE + "/api/project/iflytek/check-version";//版本更新
 
+
+    public static final String KEYCODE_VOLUME_UP = "KEYCODE_VOLUME_UP";//调大音量
+    public static final String KEYCODE_VOLUME_DOWN = "KEYCODE_VOLUME_DOWN";//调小音量
+    public static final String KEYCODE_CHANNEL_UP = "KEYCODE_CHANNEL_UP";//频道加
+    public static final String KEYCODE_CHANNEL_DOWN = "KEYCODE_CHANNEL_DOWN";//频道减
+    public static final String KEYCODE_MEDIA_PAUSE = "KEYCODE_MEDIA_PAUSE";//暂停播放
+
 }

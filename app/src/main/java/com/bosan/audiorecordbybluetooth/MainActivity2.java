@@ -9,11 +9,13 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -46,11 +48,13 @@ public class MainActivity2 extends Activity {
 
     private Thread recordingThread;
     private MyReceiver receiver;
+    private AudioManager mAudioManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
+        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
         initReceiver();
 
         FILE_NAME = Environment.getDataDirectory().getPath() + File.separator + System.currentTimeMillis() + "test.pcm";
@@ -141,7 +145,7 @@ public class MainActivity2 extends Activity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.e("keyCode", "--------" + keyCode + "--------");
+        Log.e("keyCode", "--------" + keyCode + "--------"+event.toString());
         switch (keyCode) {
             case KeyEvent.KEYCODE_0:
                 Log.e("main", "--------0--------");
@@ -304,7 +308,6 @@ public class MainActivity2 extends Activity {
     private void uploadVoiceFile(File file) {
         HashMap<String, String> baseMap = new HashMap<>();
         baseMap.put("device_id", getDeviceId());
-//        baseMap.put("send_msg", "6666");
         HttpSender sender = new HttpSender(Constants.POST_VOICE_FILE, baseMap,
                 new HttpSender.OnHttpResListener() {
                     @Override
@@ -314,8 +317,25 @@ public class MainActivity2 extends Activity {
                             if (mainBean.getData() != null) {
                                 String question = mainBean.getData().getQuestion();
                                 String answer = mainBean.getData().getAnswer();
+                                String command = mainBean.getData().getCommand();
                                 String format = String.format("问题：%1$s ----- 答案：%2$s", question, answer);
                                 Toast.makeText(MainActivity2.this, format, Toast.LENGTH_LONG).show();
+
+                                if (TextUtils.isEmpty(command)) {
+                                    return;
+                                }
+
+                                if (command.equals(Constants.KEYCODE_VOLUME_UP)) {////调大音量
+                                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,AudioManager.ADJUST_RAISE,AudioManager.FLAG_PLAY_SOUND);
+                                }else if(command.equals(Constants.KEYCODE_VOLUME_DOWN)){//调小音量
+                                    mAudioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,AudioManager.ADJUST_LOWER,AudioManager.FLAG_PLAY_SOUND);
+                                }else if(command.equals(Constants.KEYCODE_CHANNEL_UP)){//频道加
+
+                                }else if(command.equals(Constants.KEYCODE_CHANNEL_DOWN)){//频道减
+
+                                }else if(command.equals(Constants.KEYCODE_MEDIA_PAUSE)){//暂停播放
+
+                                }
                             }
                         } else {
 

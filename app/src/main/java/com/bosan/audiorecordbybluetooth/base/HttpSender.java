@@ -174,13 +174,13 @@ public class HttpSender {
 		@Override
 		public void onError(Call call, Exception e, int id) {
 			String errorInfo =e.getMessage();
-			Log.d(TAG_API,"接口出现异常，异常信息：" +errorInfo);
+			Log.d(TAG_API,requestUrl+"接口出现异常，异常信息：" +errorInfo);
 
 		}
 
 		@Override
 		public void onResponse(String json, int id) {
-			Log.d(TAG_API,"接口返回结果：" + json);
+			Log.d(TAG_API,requestUrl+"接口返回结果：" + json);
 			JSONObject mJSONObject = JSONObject.parseObject(json);
 			int code = mJSONObject.getInteger("code");//获取状态码
 			String msg = mJSONObject.getString("msg");
