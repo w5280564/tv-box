@@ -11,6 +11,8 @@ import com.zhy.http.okhttp.callback.StringCallback;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.Request;
@@ -150,7 +152,9 @@ public class HttpSender {
 		OkHttpUtils.post().url(requestUrl)
 				.params(upLoadMap)
 				.headers(headerMap)
-				.addFile("sound_file",file.getName(),file).build().execute(new StringDialogCallback());
+				.addFile("sound_file",file.getName(),file).build()
+				.connTimeOut(60000).writeTimeOut(60000).readTimeOut(60000)
+				.execute(new StringDialogCallback());
 	}
 
 

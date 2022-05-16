@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSONObject;
 import com.bosan.audiorecordbybluetooth.base.Constants;
 import com.bosan.audiorecordbybluetooth.base.HttpSender;
+import com.bosan.audiorecordbybluetooth.base.VolumeChangeObserver;
 import com.bosan.audiorecordbybluetooth.bean.mainBean;
 import com.bosan.audiorecordbybluetooth.bean.versionBean;
 import com.bosan.audiorecordbybluetooth.utils.PcmToWavUtil;
@@ -86,6 +87,7 @@ public class MainActivity2 extends Activity {
         });
 
         getCheckVersion();
+        VolumeChangeObserver volumeChangeObserver = new VolumeChangeObserver(this);
     }
 
     private void initReceiver() {

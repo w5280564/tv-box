@@ -12,7 +12,7 @@ import android.widget.Toast;
 public class BluetoothRecordingManager {
 
     private static int count = 0;
-        private static int TIMEOUT = 3000;
+        private static int TIMEOUT = 30000;
         private static int COUNTDOWN_INTERVAL = 1000;
         private static final int MAX_ATTEPTS_TO_CONNECT = 3;
 
